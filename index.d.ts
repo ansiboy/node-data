@@ -1,4 +1,4 @@
-export { createConnection, Connection, ConnectionOptions, Repository, EntityManager, getConnectionManager, getConnection, Entity, PrimaryColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, JoinColumn } from "typeorm";
+export { createConnection, Connection, ConnectionOptions, Entity, EntityManager, EndCallback, EntityMetadata, EntityOptions, EntityRepository, EntitySchema, EntitySchemaColumnOptions, EntitySchemaIndexOptions, EntitySchemaRelationOptions, EntitySubscriberInterface, Equal, EventSubscriber, Exclusion, ExecuteDbAdminCommandOptions, getConnectionManager, getConnection, Repository, In, Index, IndexInformationOptions, IndexOptions, InsertEvent, InsertOneWriteOpResult, InsertQueryBuilder, InsertResult, InsertWriteOpResult, IsNull, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn, } from "typeorm";
 export { DataContext } from "./data-context";
-export { DataHelper } from "./data-helper";
+export { DataHelper, SelectArguments } from "./data-helper";
 export { Column } from "./column";
