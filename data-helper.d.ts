@@ -17,5 +17,6 @@ export declare class DataHelper {
         relations?: string[];
         fields?: Extract<keyof T, string>[];
     }): Promise<SelectResult<T>>;
-    static createDataContext<T extends DataContext>(connConfig: ConnectionConfig, type: DataContextClass<T>, entitiesPath: string): Promise<T>;
+    static createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionConfig, entitiesPath: string): Promise<T>;
 }
+export declare function createDatabaseIfNotExists(connConfig: ConnectionConfig, initDatabase?: (conn: ConnectionConfig) => void): Promise<boolean>;

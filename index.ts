@@ -9,6 +9,6 @@ export {
     PrimaryColumn,
 } from "typeorm";
 export { DataContext } from "./data-context";
-export { DataHelper, SelectArguments } from "./data-helper";
+export { createDatabaseIfNotExists, DataHelper, SelectArguments, SelectResult } from "./data-helper";
 export { Column } from "./column";
 

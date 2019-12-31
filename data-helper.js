@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
-const fs = require("fs");
+const mysql_1 = require("mysql");
 class DataHelper {
     static async list(repository, options) {
+        options = options || {};
         let { selectArguments, relations, fields } = options;
         selectArguments = selectArguments || {};
         let order;
@@ -26,13 +27,9 @@ class DataHelper {
         });
         return { dataItems: items, totalRowCount: count };
     }
-    static async createDataContext(connConfig, type, entitiesPath) {
-        // let logger = getLogger(`data-helper:${DataHelper.createDataContext.name}`);
+    static async createDataContext(type, connConfig, entitiesPath) {
         let connectionManager = typeorm_1.getConnectionManager();
         if (connectionManager.has(connConfig.database) == false) {
-            if (!fs.existsSync(entitiesPath)) {
-                // logger.error(`Entities path is not exists, path is ${entitiesPath}.`);
-            }
             let entities = [entitiesPath];
             let dbOptions = {
                 type: "mysql",
@@ -55,3 +52,42 @@ class DataHelper {
     }
 }
 exports.DataHelper = DataHelper;
+function createDatabaseIfNotExists(connConfig, initDatabase) {
+    let dbName = connConfig.database;
+    connConfig = Object.assign({}, connConfig);
+    connConfig.database = "mysql";
+    // let logger = getLogger(`${constants.projectName} ${createDatabaseIfNotExists.name}`, g.settings.logLevel);
+    let conn = mysql_1.createConnection(connConfig);
+    let cmd = `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${dbName}'`;
+    return new Promise(function (resolve, reject) {
+        conn.query(cmd, function (err, result) {
+            if (err) {
+                reject(err);
+                console.log("err");
+                return;
+            }
+            if (result.length > 0) {
+                resolve(false);
+                return;
+            }
+            let sql = `CREATE DATABASE ${dbName}`;
+            if (connConfig.charset) {
+                sql = sql + ` CHARACTER SET ${connConfig.charset}`;
+            }
+            conn.query(sql, function (err) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                // info(`Create databasae ${dbName}.`)
+                if (initDatabase) {
+                    // info(`Initdatabase function is not null and executed to init the database.`);
+                    connConfig.database = dbName;
+                    initDatabase(connConfig);
+                }
+                resolve(true);
+            });
+        });
+    });
+}
+exports.createDatabaseIfNotExists = createDatabaseIfNotExists;

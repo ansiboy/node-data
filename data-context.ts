@@ -1,4 +1,8 @@
-import { EntityManager } from "typeorm";
+import { EntityManager, getConnection, createConnection, ConnectionOptions, getConnectionManager } from "typeorm";
+import { ConnectionConfig } from "mysql";
+import path = require("path");
+import fs = require("fs");
+
 export class DataContext {
     protected manager: EntityManager;
     constructor(manager: EntityManager) {
@@ -9,3 +13,4 @@ export class DataContext {
 export interface DataContextClass<T extends DataContext> {
     new(manager: EntityManager): T
 }
+

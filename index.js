@@ -28,6 +28,7 @@ exports.PrimaryColumn = typeorm_1.PrimaryColumn;
 var data_context_1 = require("./data-context");
 exports.DataContext = data_context_1.DataContext;
 var data_helper_1 = require("./data-helper");
+exports.createDatabaseIfNotExists = data_helper_1.createDatabaseIfNotExists;
 exports.DataHelper = data_helper_1.DataHelper;
 var column_1 = require("./column");
 exports.Column = column_1.Column;

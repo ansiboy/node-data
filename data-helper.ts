@@ -1,5 +1,5 @@
 import { Repository, getConnectionManager, ConnectionOptions, createConnection, getConnection } from "typeorm";
-import { ConnectionConfig } from "mysql";
+import { ConnectionConfig, MysqlError, createConnection as createDBConnection } from "mysql";
 import fs = require("fs");
 import { DataContext, DataContextClass } from "./data-context";
 
@@ -21,6 +21,7 @@ export class DataHelper {
         fields?: Extract<keyof T, string>[]
     }): Promise<SelectResult<T>> {
 
+        options = options || {};
         let { selectArguments, relations, fields } = options;
         selectArguments = selectArguments || {};
 
@@ -49,14 +50,9 @@ export class DataHelper {
         return { dataItems: items, totalRowCount: count } as SelectResult<T>
     }
 
-    static async createDataContext<T extends DataContext>(connConfig: ConnectionConfig, type: DataContextClass<T>, entitiesPath: string): Promise<T> {
-        // let logger = getLogger(`data-helper:${DataHelper.createDataContext.name}`);
+    static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionConfig, entitiesPath: string): Promise<T> {
         let connectionManager = getConnectionManager();
         if (connectionManager.has(connConfig.database) == false) {
-            if (!fs.existsSync(entitiesPath)) {
-                // logger.error(`Entities path is not exists, path is ${entitiesPath}.`);
-            }
-
             let entities: string[] = [entitiesPath];
             let dbOptions: ConnectionOptions = {
                 type: "mysql",
@@ -80,4 +76,51 @@ export class DataHelper {
         return dc;
     }
 
+}
+
+export function createDatabaseIfNotExists(connConfig: ConnectionConfig, initDatabase?: (conn: ConnectionConfig) => void): Promise<boolean> {
+    let dbName = connConfig.database;
+    connConfig = Object.assign({}, connConfig);
+    connConfig.database = "mysql";
+
+    // let logger = getLogger(`${constants.projectName} ${createDatabaseIfNotExists.name}`, g.settings.logLevel);
+
+    let conn = createDBConnection(connConfig);
+    let cmd = `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${dbName}'`;
+    return new Promise<boolean>(function (resolve, reject) {
+        conn.query(cmd, function (err?: MysqlError, result?: Array<any>) {
+            if (err) {
+                reject(err);
+                console.log("err")
+                return;
+            }
+
+            if (result.length > 0) {
+                resolve(false);
+                return;
+            }
+
+            let sql = `CREATE DATABASE ${dbName}`;
+            if (connConfig.charset) {
+                sql = sql + ` CHARACTER SET ${connConfig.charset}`;
+            }
+            conn.query(sql, function (err?: MysqlError) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                // info(`Create databasae ${dbName}.`)
+
+                if (initDatabase) {
+                    // info(`Initdatabase function is not null and executed to init the database.`);
+                    connConfig.database = dbName;
+                    initDatabase(connConfig);
+                }
+
+                resolve(true);
+            });
+
+        });
+    })
 }
