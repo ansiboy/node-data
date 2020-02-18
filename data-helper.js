@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
 const mysql_1 = require("mysql");
+const fs = require("fs");
+const errors_1 = require("./errors");
 class DataHelper {
     static async list(repository, options) {
         options = options || {};
@@ -30,7 +32,12 @@ class DataHelper {
     static async createDataContext(type, connConfig, entitiesPath) {
         let connectionManager = typeorm_1.getConnectionManager();
         if (connectionManager.has(connConfig.database) == false) {
-            let entities = [entitiesPath];
+            let entities = [];
+            if (entitiesPath != null) {
+                if (fs.existsSync(entitiesPath) == false)
+                    throw errors_1.errors.entityPathNotExists(entitiesPath);
+                entities.push(entitiesPath);
+            }
             let dbOptions = {
                 type: "mysql",
                 host: connConfig.host,

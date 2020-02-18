@@ -2,6 +2,7 @@ import { Repository, getConnectionManager, ConnectionOptions, createConnection, 
 import { ConnectionConfig, MysqlError, createConnection as createDBConnection } from "mysql";
 import fs = require("fs");
 import { DataContext, DataContextClass } from "./data-context";
+import { errors } from "./errors";
 
 export interface SelectArguments {
     startRowIndex?: number;
@@ -50,10 +51,17 @@ export class DataHelper {
         return { dataItems: items, totalRowCount: count } as SelectResult<T>
     }
 
-    static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionConfig, entitiesPath: string): Promise<T> {
+    static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionConfig, entitiesPath?: string): Promise<T> {
         let connectionManager = getConnectionManager();
         if (connectionManager.has(connConfig.database) == false) {
-            let entities: string[] = [entitiesPath];
+            let entities: string[] = [];
+            if (entitiesPath != null) {
+                if (fs.existsSync(entitiesPath) == false)
+                    throw errors.entityPathNotExists(entitiesPath);
+
+                entities.push(entitiesPath);
+            }
+
             let dbOptions: ConnectionOptions = {
                 type: "mysql",
                 host: connConfig.host,

@@ -1,12 +1,12 @@
 {
-    "name": "maishu-data",
-    "version": "1.0.0",
+    "name": "maishu-node-data",
+    "version": "1.2.0",
     "dependencies": {
-        "@types/mysql": "^2.15.8",
         "mysql": "^2.17.1",
         "typeorm": "^0.2.22"
     },
     "devDependencies": {
+        "@types/mysql": "^2.15.8",
         "@types/node": "^13.1.0"
     }
 }
