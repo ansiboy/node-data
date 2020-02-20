@@ -65,7 +65,7 @@ function createDatabaseIfNotExists(connConfig, initDatabase) {
     connConfig.database = "mysql";
     // let logger = getLogger(`${constants.projectName} ${createDatabaseIfNotExists.name}`, g.settings.logLevel);
     let conn = mysql_1.createConnection(connConfig);
-    let cmd = `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${dbName}'`;
+    let cmd = `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = \`${dbName}\``;
     return new Promise(function (resolve, reject) {
         conn.query(cmd, function (err, result) {
             if (err) {
@@ -77,7 +77,7 @@ function createDatabaseIfNotExists(connConfig, initDatabase) {
                 resolve(false);
                 return;
             }
-            let sql = `CREATE DATABASE ${dbName}`;
+            let sql = `CREATE DATABASE \`${dbName}\``;
             if (connConfig.charset) {
                 sql = sql + ` CHARACTER SET ${connConfig.charset}`;
             }
