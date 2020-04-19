@@ -5,6 +5,7 @@ import fs = require("fs");
 
 export class DataContext {
     protected manager: EntityManager;
+    static entitiesPath: string;
     constructor(manager: EntityManager) {
         this.manager = manager;
     }
@@ -12,5 +13,6 @@ export class DataContext {
 
 export interface DataContextClass<T extends DataContext> {
     new(manager: EntityManager): T
+    entitiesPath: string;
 }
 

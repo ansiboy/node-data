@@ -3,18 +3,10 @@ import { ConnectionConfig, MysqlError, createConnection as createDBConnection } 
 import fs = require("fs");
 import { DataContext, DataContextClass } from "./data-context";
 import { errors } from "./errors";
+import { DataSourceSelectArguments, DataSourceSelectResult } from "maishu-toolkit";
 
-export interface SelectArguments {
-    startRowIndex?: number;
-    maximumRows?: number;
-    sortExpression?: string;
-    filter?: string;
-}
-
-export interface SelectResult<T> {
-    dataItems: T[];
-    totalRowCount: number;
-}
+export type SelectArguments = DataSourceSelectArguments;
+export type SelectResult<T> = DataSourceSelectResult<T>;
 
 export class DataHelper {
     static async list<T>(repository: Repository<T>, options: {
@@ -51,17 +43,16 @@ export class DataHelper {
         return { dataItems: items, totalRowCount: count } as SelectResult<T>
     }
 
-    static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionConfig, entitiesPath?: string): Promise<T> {
+    static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionConfig): Promise<T> {
+
+        if (!type.entitiesPath)
+            throw errors.entityPathIsNull(type.name);
+
+        if (fs.existsSync(type.entitiesPath) == false)
+            throw errors.entityPathNotExists(type.entitiesPath);
+
         let connectionManager = getConnectionManager();
         if (connectionManager.has(connConfig.database) == false) {
-            let entities: string[] = [];
-            if (entitiesPath != null) {
-                if (fs.existsSync(entitiesPath) == false)
-                    throw errors.entityPathNotExists(entitiesPath);
-
-                entities.push(entitiesPath);
-            }
-
             let dbOptions: ConnectionOptions = {
                 type: "mysql",
                 host: connConfig.host,
@@ -72,7 +63,7 @@ export class DataHelper {
                 synchronize: true,
                 logging: false,
                 connectTimeout: 3000,
-                entities,
+                entities: [type.entitiesPath],
                 name: connConfig.database
             }
 
@@ -94,7 +85,7 @@ export function createDatabaseIfNotExists(connConfig: ConnectionConfig, initData
     // let logger = getLogger(`${constants.projectName} ${createDatabaseIfNotExists.name}`, g.settings.logLevel);
 
     let conn = createDBConnection(connConfig);
-    let cmd = `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = \`${dbName}\``;
+    let cmd = `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = "${dbName}"`;
     return new Promise<boolean>(function (resolve, reject) {
         conn.query(cmd, function (err?: MysqlError, result?: Array<any>) {
             if (err) {
