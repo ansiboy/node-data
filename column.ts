@@ -4,7 +4,7 @@ export let Column = function (options: ColumnOptions) {
     if (options.type == "bit" && options.transformer == null) {
         options.transformer = {
             from(value: Buffer) {
-                return value[0];
+                return value[0] == 1;
             },
             to(value) {
                 let d = value ? 1 : 0

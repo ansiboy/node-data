@@ -9,7 +9,7 @@ export type SelectArguments = DataSourceSelectArguments;
 export type SelectResult<T> = DataSourceSelectResult<T>;
 
 export class DataHelper {
-    static async list<T>(repository: Repository<T>, options: {
+    static async list<T>(repository: Repository<T>, options?: {
         selectArguments?: SelectArguments, relations?: string[],
         fields?: Extract<keyof T, string>[]
     }): Promise<SelectResult<T>> {
@@ -18,7 +18,7 @@ export class DataHelper {
         let { selectArguments, relations, fields } = options;
         selectArguments = selectArguments || {};
 
-        let order: { [P in keyof T]?: "ASC" | "DESC" | 1 | -1 };
+        let order: { [P in keyof T]?: "ASC" | "DESC" | 1 | -1 } | undefined;
         if (!selectArguments.sortExpression) {
             let createDateTimeColumn = repository.metadata.columns.filter(o => o.propertyName == "create_date_time" || o.propertyName == "createDateTime")[0];
             if (createDateTimeColumn) {
@@ -26,10 +26,13 @@ export class DataHelper {
             }
         }
 
-        let arr = selectArguments.sortExpression.split(/\s+/).filter(o => o);
-        console.assert(arr.length > 0)
-        order = {};
-        order[arr[0]] = arr[1].toUpperCase() as any;
+        if (selectArguments.sortExpression) {
+            let arr = selectArguments.sortExpression.split(/\s+/).filter(o => o);
+            console.assert(arr.length > 0)
+            order = {};
+            order[arr[0] as keyof T] = arr[1].toUpperCase() as any;
+        }
+
 
         let [items, count] = await repository.findAndCount({
             where: selectArguments.filter, relations,
@@ -52,7 +55,7 @@ export class DataHelper {
             throw errors.entityPathNotExists(type.entitiesPath);
 
         let connectionManager = getConnectionManager();
-        if (connectionManager.has(connConfig.database) == false) {
+        if (connectionManager.has(connConfig.database || "") == false) {
             let dbOptions: ConnectionOptions = {
                 type: "mysql",
                 host: connConfig.host,
@@ -88,7 +91,7 @@ export function createDatabaseIfNotExists(connConfig: ConnectionConfig, initData
     let cmd = `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = "${dbName}"`;
     return new Promise<boolean>(function (resolve, reject) {
         conn.query(cmd, function (err?: MysqlError, result?: Array<any>) {
-            if (err) {
+            if (err || result == null) {
                 reject(err);
                 console.log("err")
                 return;

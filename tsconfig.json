@@ -5,6 +5,8 @@
         "target": "esnext",
         "baseUrl": "./",
         "sourceMap": false,
-        "declaration": true
+        "declaration": false,
+        "strict": true,
+        "strictPropertyInitialization": false
     }
 }
