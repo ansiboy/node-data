@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "commonjs",
+        "target": "esnext",
+        "baseUrl": "./",
+        "sourceMap": false,
+        "declaration": true,
+        "strict": true,
+        "strictPropertyInitialization": false,
+        "outDir": "../out"
+    }
+}
