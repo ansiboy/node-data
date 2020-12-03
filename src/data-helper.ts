@@ -46,7 +46,7 @@ export class DataHelper {
         return { dataItems: items, totalRowCount: count } as SelectResult<T>
     }
 
-    static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionConfig): Promise<T> {
+    static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionOptions): Promise<T> {
 
         if (!type.entitiesPath)
             throw errors.entityPathIsNull(type.name);
@@ -54,26 +54,30 @@ export class DataHelper {
         if (fs.existsSync(type.entitiesPath) == false)
             throw errors.entityPathNotExists(type.entitiesPath);
 
+        var database = "";
+        if (connConfig.database)
+            database = typeof connConfig.database == "string" ? connConfig.database : connConfig.database.toString();
+
         let connectionManager = getConnectionManager();
-        if (connectionManager.has(connConfig.database || "") == false) {
-            let dbOptions: ConnectionOptions = {
-                type: "mysql",
-                host: connConfig.host,
-                port: connConfig.port,
-                username: connConfig.user,
-                password: connConfig.password,
+        if (connectionManager.has(database) == false) {
+            let dbOptions: ConnectionOptions = Object.assign({
+                // type: "mysql",
+                // host: connConfig.host,
+                // port: connConfig.port,
+                // username: connConfig.user,
+                // password: connConfig.password,
                 database: connConfig.database,
                 synchronize: true,
                 logging: false,
                 connectTimeout: 3000,
                 entities: [type.entitiesPath],
-                name: connConfig.database
-            }
+                name: database
+            }, connConfig);
 
             await createConnection(dbOptions);
         }
 
-        let connection = getConnection(connConfig.database);
+        let connection = getConnection(database);
         let dc = new type(connection.manager);
         return dc;
     }
