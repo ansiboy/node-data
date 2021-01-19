@@ -1,9 +1,10 @@
-import { Repository, getConnectionManager, ConnectionOptions, createConnection, getConnection } from "typeorm";
+import { Repository, getConnectionManager, ConnectionOptions, getConnection, createConnection, Connection } from "typeorm";
 import { ConnectionConfig, MysqlError, createConnection as createDBConnection } from "mysql";
 import fs = require("fs");
 import { DataContext, DataContextClass } from "./data-context";
 import { errors } from "./errors";
 import { DataSourceSelectArguments, DataSourceSelectResult } from "maishu-toolkit";
+import { SqliteDriver } from "typeorm/driver/sqlite/SqliteDriver";
 
 export type SelectArguments = DataSourceSelectArguments;
 export type SelectResult<T> = DataSourceSelectResult<T>;
@@ -48,10 +49,10 @@ export class DataHelper {
 
     static async createDataContext<T extends DataContext>(type: DataContextClass<T>, connConfig: ConnectionOptions): Promise<T> {
 
-        if (!type.entitiesPath)
-            throw errors.entityPathIsNull(type.name);
+        // if (!type.entitiesPath)
+        //     throw errors.entityPathIsNull(type.name);
 
-        if (fs.existsSync(type.entitiesPath) == false)
+        if (type.entitiesPath != null && fs.existsSync(type.entitiesPath) == false)
             throw errors.entityPathNotExists(type.entitiesPath);
 
         var database = "";
@@ -59,6 +60,19 @@ export class DataHelper {
             database = typeof connConfig.database == "string" ? connConfig.database : connConfig.database.toString();
 
         let connectionManager = getConnectionManager();
+        const NAME = "$_create";
+        if (!(connectionManager as any)[NAME]) {
+            (connectionManager as any)[NAME] = connectionManager.create;
+            connectionManager.create = function (options: ConnectionOptions) {
+                let r = (this as any)[NAME](options) as Connection;
+                if (r.driver instanceof SqliteDriver) {
+                    if (r.driver.supportedDataTypes.indexOf("json") < 0)
+                        r.driver.supportedDataTypes.push("json");
+                }
+                return r;
+            }
+        }
+
         if (connectionManager.has(database) == false) {
             let dbOptions: ConnectionOptions = Object.assign({
                 // type: "mysql",
@@ -70,7 +84,7 @@ export class DataHelper {
                 synchronize: true,
                 logging: false,
                 connectTimeout: 3000,
-                entities: [type.entitiesPath],
+                entities: type.entitiesPath != null ? [type.entitiesPath] : [],
                 name: database
             }, connConfig);
 

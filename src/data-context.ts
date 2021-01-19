@@ -1,4 +1,7 @@
-import { EntityManager, getConnection, createConnection, ConnectionOptions, getConnectionManager } from "typeorm";
+import { EntityManager, getConnection, createConnection as sourceCreateConnection, ConnectionOptions, getConnectionManager } from "typeorm";
+import { SqliteDriver } from "typeorm/driver/sqlite/SqliteDriver";
+
+
 import path = require("path");
 import fs = require("fs");
 
@@ -7,7 +10,7 @@ export class DataContext {
     static entitiesPath: string;
     constructor(manager: EntityManager) {
         this.manager = manager;
-        
+
     }
 }
 
