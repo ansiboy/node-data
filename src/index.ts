@@ -9,6 +9,7 @@ export {
     Repository,
     In, Index, IndexInformationOptions, IndexOptions, InsertEvent, InsertOneWriteOpResult, InsertQueryBuilder, InsertResult, InsertWriteOpResult, IsNull,
     JoinColumn,
+    Like,
     ManyToMany, ManyToOne,
     Not,
     OneToMany, OneToOne,
@@ -70,7 +71,7 @@ Object.assign(AbstractSqliteDriver, {
         ];
     }
 })
-if (AbstractSqliteDriver.prototype.supportedDataTypes.indexOf("json") < 0) {
+if (AbstractSqliteDriver.prototype.supportedDataTypes != null && AbstractSqliteDriver.prototype.supportedDataTypes.indexOf("json") < 0) {
     AbstractSqliteDriver.prototype.supportedDataTypes.push("json");
 }
 //==================================================================================================
