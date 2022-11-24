@@ -4,17 +4,21 @@ export {
     Connection, ConnectionOptions, createConnection,
     Entity, EntityManager, EndCallback, EntityMetadata, EntityOptions, EntityRepository, EntitySchema, EntitySchemaColumnOptions, EntitySchemaIndexOptions,
     EntitySchemaRelationOptions, EntitySubscriberInterface, Equal, EventSubscriber, Exclusion, ExecuteDbAdminCommandOptions,
+    EntityTarget,
     FindOneOptions,
     getConnectionManager, getConnection, getManager,
     Repository,
     In, Index, IndexInformationOptions, IndexOptions, InsertEvent, InsertOneWriteOpResult, InsertQueryBuilder, InsertResult, InsertWriteOpResult, IsNull,
-    JoinColumn,
-    Like,
-    ManyToMany, ManyToOne,
+    JoinColumn, JoinTable,
+    Like, LessThan, LessThanOrEqual,
+    ManyToMany, ManyToOne, MoreThan, MoreThanOrEqual,
     Not,
     OneToMany, OneToOne,
     PrimaryColumn,
+    Raw,
     ValueTransformer,
+
+
 } from "typeorm";
 export { DataContext } from "./data-context";
 export { createDatabaseIfNotExists, DataHelper, SelectArguments, SelectResult } from "./data-helper";
@@ -22,16 +26,11 @@ export { Column } from "./column";
 export { entities } from "./decorators";
 export { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions";
 export { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
+export { BitBooleanTransformer } from "./transformers/bit-boolean-transformer";
 
 import { ColumnType } from "typeorm";
 //==================================================================================================
 import { AbstractSqliteDriver } from "typeorm/driver/sqlite-abstract/AbstractSqliteDriver";
-
-// AbstractSqliteDriver.prototype.supportedDataTypes = {
-//     get() {
-
-//     }
-// }
 
 Object.assign(AbstractSqliteDriver, {
     get supportedDataTypes() {
