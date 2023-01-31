@@ -6,11 +6,15 @@ import path = require("path");
 import fs = require("fs");
 
 export class DataContext {
-    protected manager: EntityManager;
+    private _manager: EntityManager;
     static entitiesPath: string;
     constructor(manager: EntityManager) {
-        this.manager = manager;
+        this._manager = manager;
 
+    }
+
+    get manager() {
+        return this._manager;
     }
 }
 
